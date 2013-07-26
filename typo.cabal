@@ -15,9 +15,11 @@ library
     Language.Typo
     Language.Typo.ASTs
     Language.Typo.Parser
+    Language.Typo.Token
 
   build-depends:
     base,
+    mtl,
     parsec
 
 executable typoc
