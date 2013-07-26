@@ -1,0 +1,27 @@
+name:           typo
+version:        0.0.1
+license:        BSD3
+license-file:   LICENSE
+category:       Language
+copyright:      (c) 2013 Spiros Eliopoulos
+author:         Spiros Eliopoulos <seliopou@gmail.com>
+stability:      experimental
+cabal-version:  >= 1.8
+build-type:     Simple
+
+
+library
+  exposed-modules:
+    Language.Typo
+    Language.Typo.ASTs
+    Language.Typo.Parser
+
+  build-depends:
+    base,
+    parsec
+
+executable typoc
+  main-is:  Main.hs
+  build-depends:
+    base,
+    typo
