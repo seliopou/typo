@@ -23,7 +23,8 @@ typoDef :: LanguageDef s
 typoDef = emptyDef {
   P.commentLine = ";",
   P.opStart = P.opLetter typoDef,
-  P.opLetter = oneOf ":!$%&*+./<=>?@\\^|-~"
+  P.opLetter = oneOf ":!$%&*+./<=>?@\\^|-~",
+  P.reservedNames = ["def", "let", "if"]
 }
 
 typo :: GenTokenParser String u Identity

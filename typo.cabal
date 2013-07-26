@@ -26,4 +26,6 @@ executable typoc
   main-is:  Main.hs
   build-depends:
     base,
+    mtl,
+    parsec,
     typo

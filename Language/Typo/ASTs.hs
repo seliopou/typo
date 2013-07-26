@@ -17,7 +17,7 @@ data Value
 
 data Op
   = Add | Sub | Mul | Div | Rem
-  | And | Or | Xor | Eq | Lt
+  | And | Or | Imp | Eq | Lt
   deriving ( Eq, Ord, Enum, Bounded, Show )
 
 data Surface
