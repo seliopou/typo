@@ -1,7 +1,9 @@
 module Language.Typo.ASTs
   ( Value(..)
-  , Surface(..)
   , Op(..)
+  , Surface(..)
+  , Definition(..)
+  , Program(..)
   ) where
 
 import Data.Word
@@ -24,4 +26,12 @@ data Surface
   | App String [Surface]
   | Bop Op Surface Surface
   | Cond Surface Surface Surface
+  deriving ( Eq, Ord, Show )
+
+data Definition a
+  = Definition { name :: String, args :: [String], body :: a }
+  deriving ( Eq, Ord, Show )
+
+data Program a
+  = Program { definitions :: [Definition a], expr :: a }
   deriving ( Eq, Ord, Show )
