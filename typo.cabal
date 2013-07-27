@@ -16,12 +16,14 @@ library
     Language.Typo.ASTs
     Language.Typo.Compiler
     Language.Typo.Parser
+    Language.Typo.PrettyPrint
     Language.Typo.Token
 
   build-depends:
     base,
     mtl,
-    parsec
+    parsec,
+    pretty
 
 executable typoc
   main-is:  Main.hs
@@ -29,4 +31,5 @@ executable typoc
     base,
     mtl,
     parsec,
+    pretty,
     typo

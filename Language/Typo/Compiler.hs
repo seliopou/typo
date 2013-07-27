@@ -6,10 +6,11 @@ module Language.Typo.Compiler
 import Data.Traversable as T
 
 import Language.Typo.ASTs
+import Language.Typo.PrettyPrint
 
 
 compile :: Program Surface -> String
-compile = show . transform
+compile = prettyRender . transform
 
 transform :: Program Surface -> Program ANF
 transform = runGensym . T.mapM (runAnf . anormalize)
