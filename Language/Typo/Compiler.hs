@@ -1,5 +1,6 @@
 module Language.Typo.Compiler
   ( compile     -- :: Program Surface -> String
+  , compileAnf  -- :: Program Surface -> String
   , transform   -- :: Program Surface -> Program ANF
   ) where
 
@@ -10,7 +11,10 @@ import Language.Typo.PrettyPrint
 
 
 compile :: Program Surface -> String
-compile = prettyRender . transform
+compile = compileAnf
+
+compileAnf :: Program Surface -> String
+compileAnf = prettyRender . transform
 
 transform :: Program Surface -> Program ANF
 transform = runGensym . T.mapM (runAnf . anormalize)
