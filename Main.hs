@@ -19,13 +19,15 @@ main = do
       putStrLn help
       exitSuccess
 
-    let compiler | ANF `elem` fs = compileAnf
+    let compiler | ANF `elem` fs = return . compileAnf
                  | otherwise     = compile
 
     text <- hGetContents stdin
     case parse "<stdin>" text of
       Left  error   -> print error
-      Right program -> putStrLn (compiler program)
+      Right program -> do
+        result <- compiler program
+        putStr result
 
 data Flag = ANF | Help
   deriving ( Eq, Ord )
