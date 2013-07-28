@@ -24,7 +24,12 @@ typoDef = emptyDef {
   P.commentLine = ";",
   P.opStart = P.opLetter typoDef,
   P.opLetter = oneOf ":!$%&*+./<=>?@\\^|-~",
-  P.reservedNames = ["def", "let", "if"]
+  P.reservedNames = [
+      "define", "let", "if"             -- language keywords
+    , "and", "or", "imp", "cond"        -- (prelude) boolean operators
+    , "add", "sub", "mul", "div", "rem" -- (prelude) arithmetic operators
+    , "eq", "lt"                        -- (prelude) comparison operators
+    , "result", "undefined", "undef"]    -- program keywords
 }
 
 typo :: GenTokenParser String u Identity

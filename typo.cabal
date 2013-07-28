@@ -16,6 +16,7 @@ library
     Language.Typo.ASTs
     Language.Typo.Compiler
     Language.Typo.Parser
+    Language.Typo.Prelude
     Language.Typo.PrettyPrint
     Language.Typo.Token
 
