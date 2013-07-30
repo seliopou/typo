@@ -13,6 +13,7 @@ import Language.Typo.Prelude ( prelude )
 import Language.Typo.PrettyPrint
 
 import qualified Language.Typo.Compiler.Expression as E
+import qualified Language.Typo.Compiler.Definition as D
 
 -- GHC Modules
 import GHC ( runGhc, getSessionDynFlags )
@@ -38,8 +39,7 @@ transform :: Program Surface -> Program ANF
 transform = runGensym . T.mapM (runAnf . anormalize)
 
 compileHs :: Program ANF -> HsModule RdrName
-compileHs p = modwrap (map cdecl (definitions p) ++ [cexpr (expr p)])
+compileHs p = modwrap (concatMap D.definition (definitions p) ++ [cexpr (expr p)])
   where
     modwrap ds = HsModule Nothing Nothing [] ds Nothing Nothing
     cexpr e = noLoc (ValD (VarBind (E.mkName "result") (E.anf e) False))
-    cdecl d = undefined

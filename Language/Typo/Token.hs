@@ -29,7 +29,8 @@ typoDef = emptyDef {
     , "and", "or", "imp", "cond"        -- (prelude) boolean operators
     , "add", "sub", "mul", "div", "rem" -- (prelude) arithmetic operators
     , "eq", "lt"                        -- (prelude) comparison operators
-    , "result", "undefined", "undef"]    -- program keywords
+    , "result", "res", "undefined"      -- program keywords
+    ]
 }
 
 typo :: GenTokenParser String u Identity

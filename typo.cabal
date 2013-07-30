@@ -16,6 +16,7 @@ library
     Language.Typo.ASTs
     Language.Typo.Compiler
     Language.Typo.Compiler.Expression
+    Language.Typo.Compiler.Definition
     Language.Typo.Parser
     Language.Typo.Prelude
     Language.Typo.PrettyPrint
@@ -23,6 +24,7 @@ library
 
   build-depends:
     base,
+    containers,
     ghc,
     ghc-paths,
     mtl,
@@ -33,6 +35,7 @@ executable typoc
   main-is:  Main.hs
   build-depends:
     base,
+    containers,
     ghc,
     ghc-paths,
     mtl,
