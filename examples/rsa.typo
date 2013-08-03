@@ -1,0 +1,67 @@
+;; greatest common divisor 
+(define (gcd a b)
+  (if (== b 0)
+      a
+      (gcd b (% a b))))
+
+;; Extended Euclidean algorithm assuming that the arguments are relatively
+;; prime, and only interested in the coefficient of the first argument.
+(define (euclidean_x a b)
+  (if (== b 0)
+      1
+      (let (r (% a b))
+        (euclidean_y b r))))
+
+;; Helper for the above function to deal with the fact that typo does not
+;; support multiple return values, or really any data structures whatsoever.
+(define (euclidean_y a b)
+  (if (== b 0)
+      0
+      (let (q (/ a b))
+        (let (r (% a b))
+          (let (s (euclidean_x b r))
+            (let (t (euclidean_y b r))
+              (- s (* q t))))))))
+
+;; Make it big, modulo something.
+(define (expmod base exponent modulus)
+  (if (== exponent 0)
+      1
+      (% (* base (expmod base (- exponent 1) modulus)) modulus)))
+
+;; Pick a public key, given an initial candidate and the number to which the
+;; key should be relatively prime. Make sure that the initial value is low.
+;; 3 is a good start. Don't use 2, as no even number can be used as a public
+;; key.
+(define (pickPublic start phi)
+  (if (== (gcd start phi) 1)
+      start
+      (pickPublic (+ start 2) phi)))
+
+;; Pick a private key, and make sure it's positive.
+(define (pickPrivate publicKey phi)
+  (let (x (euclidean_x publicKey phi))
+    (if (< x 0)
+      (+ x phi)
+      x)))
+
+;; Work it.
+(define (encrypt message publicKey modulus)
+  (expmod message publicKey modulus))
+
+;; Unwork it.
+(define (decrypt cypherText privateKey modulus)
+  (expmod cypherText privateKey modulus))
+
+;; The message can be any number less than the modulus, where
+;;
+;;    modulus = p * q
+;;
+(define (checkRSA p q message)
+  (let (modulus (* p q))
+    (let (phi (* (- p 1) (- q 1)))
+      (let (publicKey (pickPublic 3 phi))
+        (let (privateKey (pickPrivate publicKey phi))
+          (== (decrypt (encrypt message publicKey modulus) privateKey modulus) message))))))
+
+(checkRSA 5 7 14)
