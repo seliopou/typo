@@ -24,22 +24,22 @@ library
     Language.Typo.Token
 
   build-depends:
-    base,
-    containers,
+    base        >= 4.4   && < 5,
+    containers  >= 0.3   && < 0.6,
     ghc,
     ghc-paths,
-    mtl,
-    parsec,
-    pretty
+    mtl         >= 2.0.1 && < 2.2,
+    parsec      >= 3.1   && < 4,
+    pretty      >= 1.1.0
 
 executable typoc
   main-is:  Main.hs
   build-depends:
-    base,
-    containers,
+    base        >= 4.4   && < 5,
+    containers  >= 0.3   && < 0.6,
     ghc,
     ghc-paths,
-    mtl,
-    parsec,
-    pretty,
+    mtl         >= 2.0.1 && < 2.2,
+    parsec      >= 3.1   && < 4,
+    pretty      >= 1.1.0,
     typo
