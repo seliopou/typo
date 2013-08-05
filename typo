@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Only compile one file at a time
+INPUT=/dev/stdin
+TEMPFILE=`mktemp Typo.hs`
+trap "rm $TEMPFILE" EXIT
+
+# Ensure that typoc is in your PATH.  During development, you'll have to add
+#
+#   ./dist/build/typoc
+#
+# to your PATH.
+#
+typoc < $INPUT > $TEMPFILE
+ghc -e ':t result' $TEMPFILE | awk '
+    BEGIN { FS="(" }
+    /:: True$/ { print "#t" }
+    /:: False$/ { print "#f" }
+    /:: Z$/ { print 0 }
+    /:: S/ { print NF }
+'
