@@ -14,6 +14,7 @@ library
   exposed-modules:
     Language.Typo
     Language.Typo.ASTs
+    Language.Typo.Config
     Language.Typo.Compiler
     Language.Typo.Compiler.Expression
     Language.Typo.Compiler.Definition

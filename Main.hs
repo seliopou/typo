@@ -7,7 +7,8 @@ import System.Environment
 import System.Exit
 import System.IO
 
-import Language.Typo.Compiler ( compile, compileAnf )
+import Language.Typo.Config
+import Language.Typo.Compiler ( compile )
 import Language.Typo.Parser ( parse )
 
 
@@ -19,17 +20,15 @@ main = do
       putStrLn help
       exitSuccess
 
-    let compiler | ANF `elem` fs = return . compileAnf
-                 | otherwise     = compile
-
+    let config = fromFlags [f | TCFlag f <- fs]
     text <- hGetContents stdin
     case parse "<stdin>" text of
       Left  error   -> print error
       Right program -> do
-        result <- compiler program
+        result <- compile config program
         putStr result
 
-data Flag = ANF | Help
+data Flag = TCFlag TypoFlag | Help
   deriving ( Eq, Ord )
 
 arguments :: IO ([Flag], [String])
@@ -42,7 +41,10 @@ arguments = do
       exitFailure
 
 options :: [OptDescr Flag]
-options = [ Option [] ["anf"] (NoArg ANF) "print A-normalized program" ]
+options =
+  [ Option [] ["anf"]        (NoArg (TCFlag ANormalize)) "print A-normalized program"
+  , Option [] ["no-prelude"] (NoArg (TCFlag NoPrelude))  "do not add prelude to compiled code"
+  ]
 
 help :: String
 help = usageInfo header options

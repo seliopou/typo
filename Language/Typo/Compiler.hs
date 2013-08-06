@@ -1,14 +1,16 @@
 module Language.Typo.Compiler
-  ( compile     -- :: Program Surface -> String
+  ( compile     -- :: TypoConfig -> Program Surface -> IO String
+  , compileHs   -- :: Program Surface -> IO String
   , compileAnf  -- :: Program Surface -> String
   , transform   -- :: Program Surface -> Program ANF
+  , transformHs -- :: Program ANF -> HsModule RdrName
+  , module Language.Typo.Config
   ) where
-
-import Control.Applicative ( (<$>) )
 
 import Data.Traversable as T
 
 import Language.Typo.ASTs
+import Language.Typo.Config
 import Language.Typo.Prelude ( prelude )
 import Language.Typo.PrettyPrint
 
@@ -24,22 +26,29 @@ import SrcLoc ( noLoc )
 import RdrName ( RdrName )
 
 
-compile :: Program Surface -> IO String
-compile = complete . render . ppr . compileHs . transform
+compile :: TypoConfig -> Program Surface -> IO String
+compile config = complete . compile'
   where
-    complete = ((prelude ++) <$>)
-    render d = runGhc (Just libdir) $ do
-        df <- getSessionDynFlags
-        return (showSDocForUser df neverQualify d)
-
-compileAnf :: Program Surface -> String
-compileAnf = prettyRender . transform
+    compile' | tc_aNormalize config = return . compileAnf
+             | otherwise            = compileHs . transform
+    complete | tc_noPrelude config = id
+             | otherwise           = fmap (prelude ++)
 
 transform :: Program Surface -> Program ANF
 transform = runGensym . T.mapM (runAnf . anormalize)
 
-compileHs :: Program ANF -> HsModule RdrName
-compileHs p = modwrap (concatMap D.definition (definitions p) ++ [cexpr (expr p)])
+compileAnf :: Program Surface -> String
+compileAnf = prettyRender . transform
+
+transformHs :: Program ANF -> HsModule RdrName
+transformHs p = modwrap (concatMap D.definition (definitions p) ++ [cexpr (expr p)])
   where
     modwrap ds = HsModule Nothing Nothing [] ds Nothing Nothing
     cexpr e = noLoc (ValD (VarBind (E.mkName "result") (E.anf e) False))
+
+compileHs :: Program ANF -> IO String
+compileHs = render . ppr . transformHs
+  where
+    render d = runGhc (Just libdir) $ do
+        df <- getSessionDynFlags
+        return (showSDocForUser df neverQualify d)
