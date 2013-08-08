@@ -53,9 +53,9 @@ command for even shorter one-liners:
     $ echo "(* 5 (* 4 (* 3 (* 2 1))))" | typo
     120
 
-You can use `cat` for larger programs you've been developing in a file:
+You can use input redirection for larger programs you've been developing in a file:
 
-    $ cat examples/fac.typo | typo
+    $ typo < examples/fac.typo
     120
 
 And finally, you can mix and match them with [command grouping][grp]. This is
