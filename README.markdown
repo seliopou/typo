@@ -16,7 +16,7 @@ it from source:
 This will install the compiler&mdash;`typoc`&mdash;on your system where the
 rest of your Cabal executables live. There is another
 executable&mdash;`typo`&mdash;that should be installed, but Cabal does not
-support installing non-Haskell executables. Tt's up to you to get the `typo`
+support installing non-Haskell executables. It's up to you to get the `typo`
 executable in your `PATH`. Or, just run it from the repository root every
 time you want to use it.
 
