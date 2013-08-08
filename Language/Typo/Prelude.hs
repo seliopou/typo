@@ -31,7 +31,7 @@ prelude = "\
 \  or = undefined\n\
 \\n\
 \class Imp a b c | a b -> c where\n\
-\  imp :: n -> b -> c\n\
+\  imp :: a -> b -> c\n\
 \  imp = undefined\n\
 \\n\
 \class Cond c t f r | c t f -> r where\n\
