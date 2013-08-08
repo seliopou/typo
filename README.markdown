@@ -25,7 +25,7 @@ step and run `typo` like so from the repository root:
 
     PATH=./dist/build/typoc:$PATH typo
 
-## Langauge Features
+## Language Features
 
 Typo is a Scheme-like language. A program consists of zero or more function
 definitions and an expression, which is required. The result of a Typo program
