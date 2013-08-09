@@ -27,10 +27,10 @@ import RdrName ( RdrName )
 
 
 compile :: TypoConfig -> Program Surface -> IO String
-compile config = complete . compile'
+compile config = compile'
   where
     compile' | tc_aNormalize config = return . compileAnf
-             | otherwise            = compileHs . transform
+             | otherwise            = complete . compileHs . transform
     complete | tc_noPrelude config = id
              | otherwise           = fmap (prelude ++)
 
