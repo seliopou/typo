@@ -12,7 +12,7 @@ module Language.Typo.ASTs
   , runAnf      -- :: Anf Redex -> Gensym ANF
   , runGensym   -- :: Gensym a -> a
   , anormalize  -- :: Surface -> Anf Redex
-  , gensym      -- :: State Int String
+  , gensym      -- :: (MonadState Int m) => String -> m String
   ) where
 
 import Control.Monad.Cont
@@ -93,7 +93,7 @@ anormalize s =
       f' <- lift $ runContT (anormalize f) (\r -> return (ARed r))
       return $ RCond c' t' f'
 
-valued :: ContT ANF (State Int) Redex -> ContT ANF (State Int) Value
+valued :: Anf Redex -> Anf Value
 valued m = do
   redex <- m
   case redex of
