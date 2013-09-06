@@ -43,7 +43,7 @@ surface = (T.parens nonval) <|> val
     nonval = bop <|> (try $ _let <|> cond) <|> app
     _let = do
         T.lexeme (try $ string "let")
-        T.parens (Let <$> T.identifier <*> surface) <*> surface
+        T.parens (Let <$> (SingleBind <$> T.identifier <*> surface)) <*> surface
     cond = do
         T.lexeme (try $ string "if" )
         Cond <$> surface <*> surface <*> surface

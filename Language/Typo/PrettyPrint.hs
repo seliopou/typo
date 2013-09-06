@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
 module Language.Typo.PrettyPrint
   ( PrettyPrint(..)
   , render          -- :: Doc -> String
@@ -34,7 +35,7 @@ instance PrettyPrint Surface where
   prettyPrint s =
     case s of
       Val v -> prettyPrint v
-      Let x e b -> _let x e b
+      Let (SingleBind x e) b -> _let x e b
       App f as -> _app f as
       Bop op l r -> _bop op l r
       Cond c t f -> _if c t f 
@@ -51,7 +52,7 @@ instance PrettyPrint ANF where
   prettyPrint e =
     case e of
       ARed r -> prettyPrint r
-      ALet x r b -> _let x r b
+      ALet (SingleBind x r) b -> _let x r b
 
 instance PrettyPrint a => PrettyPrint (Definition a) where
   prettyPrint d =

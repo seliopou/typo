@@ -24,7 +24,7 @@ anf :: ANF -> LHsExpr RdrName
 anf e =
   case e of
     ARed r -> redex r
-    ALet x r b ->
+    ALet (SingleBind x r) b ->
       let x' = mkName x
           r' = redex r
           b' = anf b

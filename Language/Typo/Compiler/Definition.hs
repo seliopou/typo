@@ -49,7 +49,7 @@ anf' name args e =
       cs'   <- asks context
       args' <- mapM (\k -> asks (lookupEnv k . env)) args
       tell [noLoc (InstD (mkClassInst (cs ++ cs') name args' res))]
-    ALet x r b -> do
+    ALet (SingleBind x r) b -> do
       (res, cs) <- redex name r
       local (letSituation x res cs)
         (anf' name args b)

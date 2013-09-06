@@ -1,9 +1,10 @@
 module Language.Typo.Compiler
-  ( compile     -- :: TypoConfig -> Program Surface -> IO String
-  , compileHs   -- :: Program Surface -> IO String
-  , compileAnf  -- :: Program Surface -> String
-  , transform   -- :: Program Surface -> Program ANF
-  , transformHs -- :: Program ANF -> HsModule RdrName
+  ( compile         -- :: TypoConfig -> Program Surface -> IO String
+  , compileHs       -- :: Program Surface -> IO String
+  , compileAnf      -- :: Program Surface -> String
+  , compileRacket   -- :: Program Surface -> String
+  , transform       -- :: Program Surface -> Program ANF
+  , transformHs     -- :: Program ANF -> HsModule RdrName
   , module Language.Typo.Config
   ) where
 
@@ -30,6 +31,7 @@ compile :: TypoConfig -> Program Surface -> IO String
 compile config = compile'
   where
     compile' | tc_aNormalize config = return . compileAnf
+             | tc_Racket     config = return . compileRacket
              | otherwise            = complete . compileHs . transform
     complete | tc_noPrelude config = id
              | otherwise           = fmap (prelude ++)
@@ -52,3 +54,6 @@ compileHs = render . ppr . transformHs
     render d = runGhc (Just libdir) $ do
         df <- getSessionDynFlags
         return (showSDocForUser df neverQualify d)
+
+compileRacket :: Program Surface -> IO String
+compileRacket = prettyRender . 

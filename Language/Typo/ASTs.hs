@@ -1,10 +1,13 @@
-{-# LANGUAGE DeriveFunctor, DeriveFoldable, DeriveTraversable, FlexibleContexts #-}
+{-# LANGUAGE DeriveFunctor, DeriveFoldable, DeriveTraversable, FlexibleContexts, StandaloneDeriving, UndecidableInstances #-}
 module Language.Typo.ASTs
   ( Value(..)
   , Op(..)
-  , Surface(..)
+  , SingleBind(..)
+  , BSurface(..)
+  , Surface
   , Redex(..)
-  , ANF(..)
+  , BANF(..)
+  , ANF
   , Definition(..)
   , Program(..)
   , Anf         -- :: ContT ANF (State Int)
@@ -34,13 +37,21 @@ data Op
   | And | Or | Imp | Eq | Lt
   deriving ( Eq, Ord, Enum, Bounded, Show )
 
-data Surface
+data SingleBind a = SingleBind String a
+  deriving ( Eq, Ord, Show )
+
+newtype Surface = Surface (BSurface SingleBind)
+
+data BSurface b
   = Val Value
-  | Let String Surface Surface
+  | Let (b Surface) Surface
   | App String [Surface]
   | Bop Op Surface Surface
   | Cond Surface Surface Surface
-  deriving ( Eq, Ord, Show )
+
+deriving instance Eq (b Surface) => Eq (BSurface b)
+deriving instance Ord (b Surface) => Ord (BSurface b)
+deriving instance Show (b Surface) => Show (BSurface b)
 
 data Redex
   = RVal Value
@@ -49,10 +60,15 @@ data Redex
   | RCond Value ANF ANF
   deriving ( Eq, Ord, Show )
 
-data ANF
+type ANF = BANF SingleBind
+
+data BANF b
   = ARed Redex
-  | ALet String Redex ANF
-  deriving ( Eq, Ord, Show )
+  | ALet (b Redex) ANF
+
+deriving instance Eq (b Redex) => Eq (BANF b)
+deriving instance Ord (b Redex) => Ord (BANF b)
+deriving instance Show (b Redex) => Show (BANF b)
 
 data Definition a
   = Definition { name :: String, args :: [String], body :: a }
@@ -83,9 +99,9 @@ anormalize s =
     App f as -> do
       as' <- mapM (valued . anormalize) as
       return (RApp f as')
-    Let x e b -> do
+    Let (SingleBind x e) b -> do
       e' <- anormalize e
-      mapContT ((ALet x e') `fmap`)
+      mapContT ((ALet (SingleBind x e')) `fmap`)
         (anormalize b)
     Cond c t f -> do
       c' <- valued (anormalize c)
@@ -100,7 +116,7 @@ valued m = do
     RVal v -> return v
     redex  -> do
       x <- gensym "gx"
-      mapContT ((ALet x redex) `fmap`)
+      mapContT ((ALet (SingleBind x redex)) `fmap`)
         (return (Id x))
 
 gensym :: (MonadState Int m) => String -> m String

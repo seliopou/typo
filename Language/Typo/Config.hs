@@ -9,17 +9,20 @@ module Language.Typo.Config
 
 data TypoFlag
   = ANormalize
+  | Racket
   | NoPrelude
   deriving ( Eq, Ord )
 
 data TypoConfig = TypoConfig {
   tc_aNormalize :: Bool,
+  tc_Racket :: Bool,
   tc_noPrelude :: Bool
 } deriving ( Eq, Ord )
 
 defaultConfig :: TypoConfig
 defaultConfig = TypoConfig {
   tc_aNormalize = False,
+  tc_Racket = False,
   tc_noPrelude = False
 }
 
@@ -33,3 +36,4 @@ fromFlagsWith = foldl flag
       case f of
         ANormalize -> c { tc_aNormalize = True }
         NoPrelude -> c { tc_noPrelude = True }
+        Racket -> c { tc_Racket = True }
