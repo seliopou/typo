@@ -1,8 +1,8 @@
 # Typo
 
-Typo is a programming language that runs in Haskell's type system. All
-computation happens in Haskell's type system. A Typo program is compiled to a
-Haskell module that's then typechecked to compute the result. 
+Typo is a programming language that runs in Haskell's type system. A Typo
+program is compiled to a Haskell module that's then typechecked to compute the
+result. All computation happens in Haskell's type system. 
 
 ## Installation
 
@@ -143,11 +143,11 @@ compile on all systems. But it will definitely work with `ghc-7.6.3`. If you
 can't build Typo with a particular version of the `ghc` package, please report
 it. Even better, send a pull request!
 
-# License
-
-BSD3, see LICENSE file for its text.
-
 # Historical Note
 
 This is the first programming language to be publicly released from a plane
 flying over the Atlantic Ocean. I'm almost certain of that.
+
+# License
+
+BSD3, see LICENSE file for its text.
