@@ -42,8 +42,9 @@ arguments = do
 
 options :: [OptDescr Flag]
 options =
-  [ Option [] ["anf"]        (NoArg (TCFlag ANormalize)) "print A-normalized program"
-  , Option [] ["no-prelude"] (NoArg (TCFlag NoPrelude))  "do not add prelude to compiled code"
+  [ Option "h" ["help"]       (NoArg Help)                "print this message"
+  , Option []  ["anf"]        (NoArg (TCFlag ANormalize)) "print A-normalized program"
+  , Option []  ["no-prelude"] (NoArg (TCFlag NoPrelude))  "do not add prelude to compiled code"
   ]
 
 help :: String
