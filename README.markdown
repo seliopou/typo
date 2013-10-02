@@ -20,8 +20,8 @@ support installing non-Haskell executables. It's up to you to get the `typo`
 executable in your `PATH`. Or, just run it from the repository root every
 time you want to use it.
 
-If you prefer not to install the `typoc` binary, you can skip the installa
-step and run `typo` like so from the repository root:
+If you prefer not to install the `typoc` binary, you can skip the install step
+and run `typo` like so from the repository root:
 
     PATH=./dist/build/typoc:$PATH typo
 
