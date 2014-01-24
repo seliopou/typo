@@ -2,7 +2,7 @@
 
 # Only compile one file at a time
 INPUT=/dev/stdin
-TEMPFILE=`mktemp Typo.hs`
+TEMPFILE=`mktemp TypoXXX.hs`
 trap "rm $TEMPFILE" EXIT
 
 # Ensure that typoc is in your PATH.  During development, you'll have to add
