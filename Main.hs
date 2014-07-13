@@ -25,8 +25,7 @@ main = do
     case parse "<stdin>" text of
       Left  error   -> print error
       Right program -> do
-        result <- compile config program
-        putStr result
+        putStr (compile config program)
 
 data Flag = TCFlag TypoFlag | Help
   deriving ( Eq, Ord )

@@ -17,22 +17,17 @@ import Language.Typo.PrettyPrint
 import qualified Language.Typo.Compiler.Expression as E
 import qualified Language.Typo.Compiler.Definition as D
 
--- GHC Modules
-import GHC ( runGhc, getSessionDynFlags )
-import GHC.Paths ( libdir )
-import HsSyn
-import Outputable ( Outputable(ppr), showSDocForUser, neverQualify )
-import SrcLoc ( noLoc )
-import RdrName ( RdrName )
+import Language.Haskell.TH.Syntax
+import Language.Haskell.TH.Ppr
 
 
-compile :: TypoConfig -> Program Surface -> IO String
+compile :: TypoConfig -> Program Surface -> String
 compile config = compile'
   where
-    compile' | tc_aNormalize config = return . compileAnf
+    compile' | tc_aNormalize config = compileAnf
              | otherwise            = complete . compileHs . transform
     complete | tc_noPrelude config = id
-             | otherwise           = fmap (prelude ++)
+             | otherwise           = (prelude ++)
 
 transform :: Program Surface -> Program ANF
 transform = runGensym . T.mapM (runAnf . anormalize)
@@ -40,15 +35,10 @@ transform = runGensym . T.mapM (runAnf . anormalize)
 compileAnf :: Program Surface -> String
 compileAnf = prettyRender . transform
 
-transformHs :: Program ANF -> HsModule RdrName
-transformHs p = modwrap (concatMap D.definition (definitions p) ++ [cexpr (expr p)])
+transformHs :: Program ANF -> [Dec]
+transformHs p = concatMap D.definition (definitions p) ++ [cexpr (expr p)]
   where
-    modwrap ds = HsModule Nothing Nothing [] ds Nothing Nothing
-    cexpr e = noLoc (ValD (VarBind (E.mkName "result") (E.anf e) False))
+    cexpr e = ValD (VarP (mkName "result")) (NormalB (E.anf e)) []
 
-compileHs :: Program ANF -> IO String
-compileHs = render . ppr . transformHs
-  where
-    render d = runGhc (Just libdir) $ do
-        df <- getSessionDynFlags
-        return (showSDocForUser df neverQualify d)
+compileHs :: Program ANF -> String
+compileHs = pprint . transformHs

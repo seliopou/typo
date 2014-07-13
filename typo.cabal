@@ -1,9 +1,9 @@
 name:           typo
-version:        0.0.1
+version:        0.1.0
 license:        BSD3
 license-file:   LICENSE
 category:       Language
-copyright:      (c) 2013 Spiros Eliopoulos
+copyright:      (c) 2013-2014 Spiros Eliopoulos
 author:         Spiros Eliopoulos <seliopou@gmail.com>
 stability:      experimental
 cabal-version:  >= 1.8
@@ -26,20 +26,18 @@ library
   build-depends:
     base        >= 4.4   && < 5,
     containers  >= 0.3   && < 0.6,
-    ghc,
-    ghc-paths,
     mtl         >= 2.0.1 && < 2.2,
     parsec      >= 3.1   && < 4,
-    pretty      >= 1.1.0
+    pretty      >= 1.1.0,
+    template-haskell
 
 executable typoc
   main-is:  Main.hs
   build-depends:
     base        >= 4.4   && < 5,
     containers  >= 0.3   && < 0.6,
-    ghc,
-    ghc-paths,
     mtl         >= 2.0.1 && < 2.2,
     parsec      >= 3.1   && < 4,
     pretty      >= 1.1.0,
+    template-haskell,
     typo

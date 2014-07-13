@@ -14,32 +14,26 @@ import Language.Typo.ASTs
 
 import qualified Language.Typo.Compiler.Expression as E
 
-import Bag ( emptyBag, unitBag )
-import HsDecls
-import HsSyn
-import NameSet ( emptyNameSet )
-import SrcLoc ( Located, noLoc )
-import RdrName
-import OccName
+import Language.Haskell.TH.Syntax
 
 
-definition :: Definition ANF -> [Located (HsDecl RdrName)]
+definition :: Definition ANF -> [Dec]
 definition (Definition name args expr) = 
-  (noLoc (TyClD (mkClassDecl name args))):(anf name args expr)
+  (mkClassDecl name args):(anf name args expr)
 
 data Situation = Situation {
     env :: Env,
-    context :: [LHsType RdrName]
+    context :: Cxt
 }
 
-type CM = ReaderT Situation (StateT Int (Writer [Located (HsDecl RdrName)]))
+type CM = ReaderT Situation (StateT Int (Writer [Dec]))
 
 
-anf :: String -> [String] -> ANF -> [Located (HsDecl RdrName)]
+anf :: String -> [String] -> ANF -> [Dec]
 anf name args e = snd (runWriter (evalStateT (runReaderT (anf' name args e) sit) 0))
   where
     sit = Situation env []
-    env = foldl (\e a -> addEnv a (noLoc (E.mkTv a)) e) emptyEnv args
+    env = foldl (\e a -> addEnv a (VarT (mkName a)) e) emptyEnv args
 
 anf' :: String -> [String] -> ANF -> CM ()
 anf' name args e =
@@ -48,7 +42,7 @@ anf' name args e =
       (res, cs) <- redex name r
       cs'   <- asks context
       args' <- mapM (\k -> asks (lookupEnv k . env)) args
-      tell [noLoc (InstD (mkClassInst (cs ++ cs') name args' res))]
+      tell [mkClassInst (cs ++ cs') name args' res]
     ALet x r b -> do
       (res, cs) <- redex name r
       local (letSituation x res cs)
@@ -59,7 +53,7 @@ anf' name args e =
         context = cs ++ (context s)
     }
 
-redex :: String -> Redex -> CM (LHsType RdrName, [LHsType RdrName])
+redex :: String -> Redex -> CM (Type, Cxt)
 redex name r =
   case r of
     RVal v -> do
@@ -68,12 +62,12 @@ redex name r =
     RApp f vs -> do
       result <- gentv "res"
       args   <- mapM value vs
-      let cxt = noLoc (mkHsAppTys (mkClassTv f) (args ++ [result]))
+      let cxt = ClassP (mkCName f) (args ++ [result])
       return (result, [cxt])
     RBop op l r -> do
       result <- gentv "res"
       args'  <- mapM value [l, r]
-      let cxt = noLoc (mkHsAppTys (operation op) (args' ++ [result]))
+      let cxt = ClassP (operation op) (args' ++ [result])
       return (result, [cxt])
     RCond c t f -> do
       branch <- gensym (name ++ "Branch")
@@ -82,10 +76,10 @@ redex name r =
 
       -- XXX: This passes the entire environment to the branch even if some
       -- identifiers aren't used in the branch.
-      tell [noLoc (TyClD (mkClassDecl branch ns))]
+      tell [mkClassDecl branch ns]
 
-      let true = noLoc (E.mkTv "True")
-          false = noLoc (E.mkTv "False")
+      let true = VarT (mkName "True")
+          false = VarT (mkName "False")
       case c of
         Number _  ->
           -- Type error.
@@ -104,7 +98,7 @@ redex name r =
           local (branchSituation s false)
             (anf' branch ns f)
 
-      let cxt = noLoc (mkHsAppTys (mkClassTv branch) (vs ++ [result]))
+      let cxt = ClassP (mkCName branch) (vs ++ [result])
       return (result, [cxt])
   where
     noContextSituation s = s {
@@ -115,54 +109,43 @@ redex name r =
       context = []
     }
 
-value :: Value -> CM (LHsType RdrName)
+value :: Value -> CM Type
 value v =
   case v of
     Number w -> return (E.number w)
-    Boolean b -> return (noLoc (if b then E.mkTv "True" else E.mkTv "False"))
+    Boolean b -> return (VarT (mkName (if b then "True" else "False")))
     Id s -> asks ((lookupEnv s) . env)
 
-operation :: Op -> LHsType RdrName
-operation = mkClassTv . E.operationLookup
-
-mkClassName = mkRdrUnqual . mkClsOcc . capitalize
-mkClassTv = noLoc . HsTyVar . mkClassName
+operation :: Op -> Name
+operation = mkCName . E.operationLookup
 
 mkClassDecl name args =
-  ClassDecl
-    (noLoc [])
-    (noLoc (mkClassName name))
-    (HsQTvs [] (map (noLoc . UserTyVar) (args' ++ [resname])))
-    [noLoc (args', [resname])]
-    [noLoc (TypeSig [noLoc dname] (mkFunTy restype args))]
-    (unitBag (noLoc (VarBind dname undef False)))
-    [] [] [] emptyNameSet
+  ClassD [] (mkCName name)
+    (map PlainTV (args' ++ [resname]))
+    [FunDep args' [resname]]
+    [ SigD (mkName name)        (mkFunTy restype args)
+    , ValD (VarP (mkName name)) (NormalB (VarE (mkName "undefined"))) []
+    ]
   where
-    restype = noLoc (E.mkTv "res")
-    resname = E.mkName "res"
-    dname = E.mkName name
-    undef = noLoc (E.mkId "undefined")
-    args' = map E.mkName args
+    restype = VarT (mkName "res")
+    resname = mkName "res"
+    args' = map mkName args
 
-mkClassInst ctxts name args result = ClsInstD
-  (noLoc 
-    (mkImplicitHsForAllTy (noLoc ctxts)
-      (noLoc (mkHsAppTys (mkClassTv name)
-                         (args ++ [result])))))
-  emptyBag
-  []
-  []
+mkClassInst ctxts name args result =
+  InstanceD ctxts (foldl AppT (ConT (mkCName name)) (args ++ [result])) []
 
-mkFunTy :: LHsType RdrName -> [String] -> LHsType RdrName
-mkFunTy r = (foldr (\a b -> noLoc (HsFunTy a b)) r) . (map (noLoc . E.mkTv))
+mkFunTy :: Type -> [String] -> Type
+mkFunTy r = (foldr (\a b -> AppT (AppT ArrowT a) b) r) . (map (VarT . mkName))
 
 capitalize :: String -> String
 capitalize [] = []
 capitalize (c:cs) = (toUpper c):cs
 
-gentv = (fmap (noLoc . E.mkTv)) . gensym
+mkCName = mkName . capitalize 
 
-type Env = Map String (LHsType RdrName)
+gentv = (fmap (VarT . mkName)) . gensym
+
+type Env = Map String Type
 emptyEnv = M.empty
 addEnv = M.insert
 toListEnv = M.toList

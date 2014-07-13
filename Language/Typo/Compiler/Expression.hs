@@ -5,22 +5,14 @@ module Language.Typo.Compiler.Expression
   , number
   , operation
   , operationLookup
-  , mkName
-  , mkId
-  , mkTv
   ) where
 
 import Language.Typo.ASTs
 
-import Bag ( unitBag )
-import HsBinds
-import HsSyn
-import SrcLoc ( noLoc )
-import RdrName
-import OccName
+import Language.Haskell.TH.Syntax
 
 
-anf :: ANF -> LHsExpr RdrName
+anf :: ANF -> Exp
 anf e =
   case e of
     ARed r -> redex r
@@ -28,15 +20,15 @@ anf e =
       let x' = mkName x
           r' = redex r
           b' = anf b
-          binds = HsValBinds (ValBindsIn (unitBag (noLoc (VarBind x' r' False))) [])
-        in noLoc (HsLet binds b')
+          bind = ValD (VarP x') (NormalB r') []
+        in LetE [bind] b'
 
-redex :: Redex -> LHsExpr RdrName
+redex :: Redex -> Exp
 redex r =
   case r of
     RVal v -> value v
     RApp f as ->
-      let f'  = noLoc (mkId f)
+      let f'  = VarE (mkName f)
           as' = map value as
         in mkApp f' as'
     RBop op l r ->
@@ -48,31 +40,29 @@ redex r =
       let c' = value c
           t' = anf t
           f' = anf f
-          cond = noLoc (mkId "cond")
+          cond = VarE (mkName "cond")
         in mkApp cond [c', t', f']
 
-value :: Value -> LHsExpr RdrName
-value v = noLoc $
+value :: Value -> Exp
+value v =
   case v of
     Number w ->
-      ExprWithTySig
-        (noLoc (mkId "undefined"))
-        (number w)
-    Boolean b -> mkId $
+      SigE (VarE (mkName "undefined")) (number w)
+    Boolean b -> VarE $ mkName $
       if b then "true"
            else "false"
-    Id s -> mkId s
+    Id s -> VarE $ mkName s
 
 -- XXX: The `fromIntegral` is not good, but probably won't come up in practice.
 --      If it does, that right there is what's causing the problem.
-number :: Integral a => a -> LHsType RdrName
-number n = (iterate (\t -> noLoc (HsAppTy s t)) z) !! (fromIntegral n)
+number :: Integral a => a -> Type
+number n = (iterate (\t -> AppT s t) z) !! (fromIntegral n)
   where
-    s = noLoc (mkTv "S")
-    z = noLoc (mkTv "Z")
+    s = ConT (mkName "S")
+    z = VarT (mkName "Z")
 
-operation :: Op -> LHsExpr RdrName
-operation = noLoc . mkId . operationLookup
+operation :: Op -> Exp
+operation = VarE . mkName . operationLookup
 
 operationLookup :: Op -> String
 operationLookup op =
@@ -88,7 +78,4 @@ operationLookup op =
     Eq  -> "eq"
     Lt  -> "lt"
 
-mkName = mkRdrUnqual . mkVarOcc
-mkId = HsVar . mkName
-mkTv = HsTyVar . mkRdrUnqual . mkTyVarOcc
-mkApp = foldl (\a b -> noLoc (HsApp a b))
+mkApp = foldl AppE

@@ -135,14 +135,6 @@ instead:
     (define (not b)
       (-> b #f))
 
-# Compatibility
-
-Typo uses the `ghc` package to construct and pretty print a Haskell abstract
-syntax tree. The `ghc` package's API is notoriously unstable, so Typo may not
-compile on all systems. But it will definitely work with `ghc-7.6.3`. If you
-can't build Typo with a particular version of the `ghc` package, please report
-it. Even better, send a pull request!
-
 # Historical Note
 
 This is the first programming language to be publicly released from a plane
